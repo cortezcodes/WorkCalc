@@ -6,7 +6,7 @@ from model import Base
 DATABASE_URL = "sqlite:///workcalc_database.db"
 
 # Create the engine
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL)
 
 # Create a configured "Session" class
 SessionLocal = sessionmaker(bind=engine)

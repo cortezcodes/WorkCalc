@@ -1,15 +1,31 @@
+'''
+File: main.py
+Project: WorkCalc
+File Created: Friday, 22nd November 2024 8:22:26 pm
+Author: Cortez L. McCrary (cortez.mccrary.codes@gmail.com)
+-----
+Last Modified: Saturday, 23rd November 2024 4:17:02 pm
+Modified By: Cortez L. McCrary (cortez.mccrary.codes@gmail.com>)
+-----
+Copyright 2024 Cortez McCrary, Employee of JHU APL
+'''
+
+from email_validator import EmailNotValidError
 import typer
 from os import system, name
 from rich import print
-from rich.console import Console
 from maskpass import advpass
-from dbController import startConnection, isUserNameFree
-from email_validator import validate_email, EmailNotValidError
+from dbController import startConnection
+from userManagement import ConfirmPasswordError, registerUser
+from sqlalchemy.exc import IntegrityError, DBAPIError
 import time
+
 
 
 clear = lambda: system('cls' if name=='nt' else 'clear')
 session = startConnection()
+
+
 
 def displayMenu(options: list[str], title=""):
     '''
@@ -35,7 +51,7 @@ def main():
                 login()    
             case 2:
                 clear()
-                createUser()
+                createUserMenu()
             case 3:
                 clear()
                 print("Goodbye")
@@ -54,47 +70,57 @@ def login():
     username = typer.prompt("Username")
     password = advpass()
 
-def createUser():
+def createUserMenu():
     '''
-    Prompts creating a new user 
+    Menu for creating a new user
     '''
-    print("Create new account:\n")
-    isValidEmail = False
-    isUniqueUsername = False
-    isConfirmedPassword = False
-
-    # Prompts to the user
-    firstName = typer.prompt("First Name")
-    lastName = typer.prompt("Last Name")
-    while not isValidEmail:
-        try:
-            email = validate_email(typer.prompt("Email")).email
-            isValidEmail = True
-        except EmailNotValidError as e:
-            print("[red]Email was not valid, please try again![/red]")
-
-    while not isUniqueUsername:
+    isCreated = False
+    clear()
+    while not isCreated:
+        
+        print("Create new account:\n")
+        firstName = typer.prompt("First Name")
+        lastName = typer.prompt("Last Name")
+        email = typer.prompt("Email")
         username = typer.prompt("Username")
-        isUniqueUsername = isUserNameFree(username, session)
-        if isUniqueUsername:
-            print("[green]Username is available[/green]")
-        else:
-            print("[red]username already taken please try again")
-    
-    while not isConfirmedPassword:
         password = advpass()
         confirmPassword = advpass(prompt="Confirm Password:")
-        if password == confirmPassword:
-            isConfirmedPassword = True
+
+        clear()
+        print(f"Name: {firstName} {lastName}")
+        print(f"Email: {email}")
+        print(f"username: {username}")
+
+        isConfirmed = typer.confirm("Confirm information")
+        if isConfirmed:
+            try:
+                registerUser(firstName=firstName, 
+                        lastName=lastName, 
+                        email=email, 
+                        username=username, 
+                        password=password, 
+                        confirmPassword=confirmPassword,
+                        session=session)
+            except EmailNotValidError as e:
+                print("[red]Email was not valid, please try again![/red]")
+                continue
+            except (IntegrityError, DBAPIError, TypeError) as e:
+                print("[red]Either email or username is not unique")
+                continue
+            except ConfirmPasswordError as e:
+                print(f"[red]{e}[/red]")
+                continue
+            except Exception as e:
+                print(type(e))
+                print(f"[red]An unexpected error occurred:[/red] {e}")
+                continue
+
+            isCreated = True
+            print(f"[green]Account created.[/green]")
+            print(f"[green]Welcome, {firstName}![/green]")
+            print(f"[green]Please login[/green]")
         else:
-            print("[red]Password did not match! Please try again.[/red]")
-
-        
-    #TODO Confirm all information before submitting to the db
-    #TODO Confirm a username does not already exist
-
-
-    
+            continue
 
 if __name__ == "__main__":
     typer.run(main)

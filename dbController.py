@@ -1,6 +1,9 @@
+import json
 from db import SessionLocal, init_db
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from model import User
+import bcrypt
 
 
 def startConnection():
@@ -12,15 +15,35 @@ def startConnection():
     # Create a database session
     return SessionLocal()
 
-def isUserNameFree(name:str, session: Session):
+def hashPassword(password: str):
     '''
-    Function for querying workcalc's database and checking if a username already exist.\n
-    name - username to be checked for in the database
-    session - session to the database to query against
+    Helper Function for hashing password. 
+    password - String of the password to be hashed
+    returns - string of hashed password
+    '''
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')  
     
+def createUser(firstName: str, lastName: str, email: str, username: str, password: str , session: Session):
     '''
-    response = session.query(User).filter(User.username == name).first()
-    if not response:
-        return True
-    else:
-        return False
+    Adds a new user to the User table\n
+    firstName: str\n
+    lastName: str\n
+    email:str\n
+    username:str\n
+    password:str\n
+    session: Session\n
+    '''
+    passwordHash = hashPassword(password)
+    try:
+        new_user = User(first_name=firstName, last_name=lastName, email=email, username=username, password=passwordHash)
+        session.add(new_user)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise IntegrityError
+    except Exception as e:
+        session.rollback()
+        raise e
+        
