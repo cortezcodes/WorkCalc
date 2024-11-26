@@ -16,8 +16,8 @@ from os import system, name
 from rich import print
 from maskpass import advpass
 from dbController import startConnection
-from userManagement import ConfirmPasswordError, registerUser
-from sqlalchemy.exc import IntegrityError, DBAPIError
+from userManagement import ConfirmPasswordError, WrongCredentialsError, register_user_handler, EmptyFieldError, login_handler
+from sqlalchemy.exc import IntegrityError, DBAPIError, NoResultFound, MultipleResultsFound
 import time
 
 
@@ -27,7 +27,7 @@ session = startConnection()
 
 
 
-def displayMenu(options: list[str], title=""):
+def display_menu(options: list[str], title=""):
     '''
     Helper function for displaying a terminal menu, providing auto numbering and optional title\n
     options: list[str] - each string within the list will become an option in the terminal menu\n
@@ -43,15 +43,15 @@ def main():
     
     clear()
     while True:
-        displayMenu(["login", "Create Account", "Exit"], title="Welcome to WorkCalc!")
+        display_menu(["login", "Create Account", "Exit"], title="Welcome to WorkCalc!")
         selection = int(typer.prompt("Make selection"))
         
         match selection:
             case 1:
-                login()    
+                login_prompt()    
             case 2:
                 clear()
-                createUserMenu()
+                create_user_prompt()
             case 3:
                 clear()
                 print("Goodbye")
@@ -62,15 +62,29 @@ def main():
                 print("invalid input, please try again.\n")
 
 
-def login():
+def login_prompt():
     '''
     Prompts for username and password to login to workcalc account
     '''
-    
+    clear()
     username = typer.prompt("Username")
     password = advpass()
+    try:
+        user = login_handler(username=username, password=password, session=session)
+        print(f"[green]Login successful. Welcome, {user.first_name}![/green]")
+    except EmptyFieldError as e:
+        print(f"[red]{e}[/red]\n")
+    except NoResultFound as e:
+        print(f"[red]Username and/or password incorrect[/red]")
+    except MultipleResultsFound as e:
+        print("Unexpected error, multiple results found")
+    except WrongCredentialsError as e:
+        print(f"[red]{e}[/red]")
 
-def createUserMenu():
+    
+
+
+def create_user_prompt():
     '''
     Menu for creating a new user
     '''
@@ -94,7 +108,7 @@ def createUserMenu():
         isConfirmed = typer.confirm("Confirm information")
         if isConfirmed:
             try:
-                registerUser(firstName=firstName, 
+                register_user_handler(firstName=firstName, 
                         lastName=lastName, 
                         email=email, 
                         username=username, 

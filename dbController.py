@@ -1,7 +1,7 @@
 import json
 from db import SessionLocal, init_db
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound, MultipleResultsFound
 from model import User
 import bcrypt
 
@@ -15,17 +15,23 @@ def startConnection():
     # Create a database session
     return SessionLocal()
 
-def hashPassword(password: str):
+def login(username: str, password: str, session: Session):
     '''
-    Helper Function for hashing password. 
-    password - String of the password to be hashed
-    returns - string of hashed password
+    Queries the database to verify user credentials
     '''
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')  
+    try:
+        user = session.query(User).filter_by(username=username).one()
+        is_password = user.check_password(password)
+        if is_password:
+            return user
+        else:
+            return False
+    except NoResultFound as e:
+        raise e
+    except MultipleResultsFound as e:
+        raise e
     
-def createUser(firstName: str, lastName: str, email: str, username: str, password: str , session: Session):
+def create_user(firstName: str, lastName: str, email: str, username: str, password: str , session: Session):
     '''
     Adds a new user to the User table\n
     firstName: str\n
@@ -35,7 +41,7 @@ def createUser(firstName: str, lastName: str, email: str, username: str, passwor
     password:str\n
     session: Session\n
     '''
-    passwordHash = hashPassword(password)
+    passwordHash = User.hash_password(password)
     try:
         new_user = User(first_name=firstName, last_name=lastName, email=email, username=username, password=passwordHash)
         session.add(new_user)
