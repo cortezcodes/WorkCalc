@@ -67,18 +67,21 @@ def main():
             case _:
                 print("invalid input, please try again.\n")
 
-def user_menu():
-
+def main_menu():
+    '''
+    Display and controls UI interactions once a user has logged in. 
+    '''
     formatted_date = current_date.strftime("%A, %d %B %Y")
     while True:
         display_menu(["Daily", "Manage Projects", "Logout"], f"Welcome, {current_user.first_name}\nDate: {formatted_date}")
         new_line()
-        selection = int(typer.prompt("What would you like to do"))
+        selection = int(typer.prompt("What would you like to do Today"))
         match selection:
             case 1:
                 print("Daily is under construction")
             case 2:
-                print("Accomplishments is under construction")
+                clear()
+                project_menu()
             case 3:
                 clear()
                 print(f"Logging, {current_user.first_name} out. Goodbye!")
@@ -87,6 +90,19 @@ def user_menu():
                 clear()
                 break
 
+def project_menu():
+    '''
+    Menu for Managing a User's Projects
+    '''
+    while True:
+        display_menu(["View Project", "Add Project", "Edit Project", "Delete Project", "Back"], "Project Menu")
+        new_line()
+        selection = int(typer.prompt("Let's manage your Projects"))
+
+        match selection:
+            case 5:
+                clear()
+                break
 
 def login_prompt():
     '''
@@ -100,7 +116,7 @@ def login_prompt():
         current_user = login_handler(username=username, password=password, session=session)
         clear()
         print(f"[green]Login successful![/green]")
-        user_menu()
+        main_menu()
     except EmptyFieldError as e:
         print(f"[red]{e}[/red]\n")
     except NoResultFound as e:

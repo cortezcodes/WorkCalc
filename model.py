@@ -46,7 +46,7 @@ class Project(Base):
     date_created = Column(DateTime, default=func.now())
     name = Column(String, nullable=False)
     description = Column(String)
-    budgets = relationship("Budget", back_populates="projects", cascade="all, delete-orphan")
+    budgets = relationship("Budget", back_populates="project", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Project(name='{self.name}', description='{self.description}, budgets'{self.budgets}')>"
@@ -60,3 +60,4 @@ class Budget(Base):
     budget_code = Column(String, nullable=False)
     usage_description = Column(String) 
     project_id = Column(Integer, ForeignKey('projects.id'))  
+    project = relationship("Project", back_populates="budgets")
