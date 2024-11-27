@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 import bcrypt
 
 # Define the base for models
@@ -36,3 +37,26 @@ class User(Base):
         Helper function for validating password credentials
         '''
         return bcrypt.checkpw(given_password.encode('utf-8'), self.password.encode('utf-8'))
+    
+    
+class Project(Base):
+    __tablename__="projects"
+
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime, default=func.now())
+    name = Column(String, nullable=False)
+    description = Column(String)
+    budgets = relationship("Budget", back_populates="projects", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Project(name='{self.name}', description='{self.description}, budgets'{self.budgets}')>"
+    
+    
+class Budget(Base):
+    __tablename__="budgets"
+
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime, default=func.now())
+    budget_code = Column(String, nullable=False)
+    usage_description = Column(String) 
+    project_id = Column(Integer, ForeignKey('projects.id'))  
