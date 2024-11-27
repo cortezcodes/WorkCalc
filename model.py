@@ -18,6 +18,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
+    projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(name='{self.first_name}' {self.last_name}, email='{self.email}, username='{self.username}'')>"
@@ -47,6 +48,9 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     budgets = relationship("Budget", back_populates="project", cascade="all, delete-orphan")
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="projects")
 
     def __repr__(self):
         return f"<Project(name='{self.name}', description='{self.description}, budgets'{self.budgets}')>"
