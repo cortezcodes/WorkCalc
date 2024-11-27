@@ -18,12 +18,17 @@ from maskpass import advpass
 from dbController import startConnection
 from userManagement import ConfirmPasswordError, WrongCredentialsError, register_user_handler, EmptyFieldError, login_handler
 from sqlalchemy.exc import IntegrityError, DBAPIError, NoResultFound, MultipleResultsFound
+from model import User
+from datetime import datetime
 import time
 
 
 
 clear = lambda: system('cls' if name=='nt' else 'clear')
+new_line = lambda: print("\n")
 session = startConnection()
+current_user: User = None
+current_date: datetime = datetime.now()
 
 
 
@@ -44,7 +49,8 @@ def main():
     clear()
     while True:
         display_menu(["login", "Create Account", "Exit"], title="Welcome to WorkCalc!")
-        selection = int(typer.prompt("Make selection"))
+        new_line()
+        selection = int(typer.prompt("Make a selection"))
         
         match selection:
             case 1:
@@ -61,6 +67,26 @@ def main():
             case _:
                 print("invalid input, please try again.\n")
 
+def user_menu():
+
+    formatted_date = current_date.strftime("%A, %d %B %Y")
+    while True:
+        display_menu(["Daily", "Manage Projects", "Logout"], f"Welcome, {current_user.first_name}\nDate: {formatted_date}")
+        new_line()
+        selection = int(typer.prompt("What would you like to do"))
+        match selection:
+            case 1:
+                print("Daily is under construction")
+            case 2:
+                print("Accomplishments is under construction")
+            case 3:
+                clear()
+                print(f"Logging, {current_user.first_name} out. Goodbye!")
+                current_user == None
+                time.sleep(1)
+                clear()
+                break
+
 
 def login_prompt():
     '''
@@ -70,8 +96,11 @@ def login_prompt():
     username = typer.prompt("Username")
     password = advpass()
     try:
-        user = login_handler(username=username, password=password, session=session)
-        print(f"[green]Login successful. Welcome, {user.first_name}![/green]")
+        global current_user 
+        current_user = login_handler(username=username, password=password, session=session)
+        clear()
+        print(f"[green]Login successful![/green]")
+        user_menu()
     except EmptyFieldError as e:
         print(f"[red]{e}[/red]\n")
     except NoResultFound as e:
@@ -80,8 +109,6 @@ def login_prompt():
         print("Unexpected error, multiple results found")
     except WrongCredentialsError as e:
         print(f"[red]{e}[/red]")
-
-    
 
 
 def create_user_prompt():
