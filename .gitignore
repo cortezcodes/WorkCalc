@@ -3,3 +3,4 @@ __pycache__
 workcalc_database.db
 alembic/
 alembic.ini
+workcalc.db

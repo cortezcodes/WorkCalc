@@ -38,7 +38,7 @@ class WrongCredentialsError(Exception):
     '''
     pass
 
-def register_user_handler(firstName: str, lastName: str, email: str, username: str, password: str, confirmPassword: str, session: Session):
+def register_user_handler(firstName: str, lastName: str, email: str, username: str, password: str, confirmPassword: str):
     '''
     Prompts creating a new user 
     '''
@@ -55,12 +55,11 @@ def register_user_handler(firstName: str, lastName: str, email: str, username: s
                     lastName=lastName,
                     email=email,
                     username=username,
-                    password=password,
-                    session=session)
+                    password=password)
     except Exception as e:
          raise e
 
-def login_handler(username: str, password:str, session: Session):
+def login_handler(username: str, password:str):
     '''
     Strips spaces from leading and trailing characters of username and password before querying to login a user
     '''
@@ -69,7 +68,7 @@ def login_handler(username: str, password:str, session: Session):
     if not username or not password:
         raise EmptyFieldError("EmptyFieldError: Required field left blank.")
     try: 
-        user = login(username=username, password=password, session=session)
+        user = login(username=username, password=password)
         if user:
             return user
         else:
