@@ -1,10 +1,10 @@
-import json
+from rich import print
 from sqlite3 import OperationalError
 from typing import List
 from db import init_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound, MultipleResultsFound
-from model import Project, User
+from model import Budget, Project, User
 
 def startConnection():
     '''
@@ -60,21 +60,39 @@ def create_user(firstName: str, lastName: str, email: str, username: str, passwo
     finally:
         session.close()
 
-def add_project(title: str, description: str, user_id: int):
+def add_project(title: str, description: str, budgets: List[str], user_id: int):
     '''
     Function for adding new projects to the database.
+    returns title of project if successful
     '''
     session  = startConnection()
     current_user = session.query(User).filter_by(id=user_id).first()
-    # try:
-    new_project = Project(title=title, description=description, owner=current_user)
-    session.add(new_project)
-    session.commit()
-    project_title = new_project.title
-    # except Exception as e: 
-    #     session.rollback()
-    #     raise e
-    # finally:
-    session.close()
-    return project_title
+    project_title = ""
+    try:
+        new_project = Project(title=title, description=description, owner=current_user)
+        session.add(new_project)
+
+        for budget in budgets:
+            new_budget = Budget(budget_code=budget.strip(), project=new_project)
+            session.add(new_budget)
+        
+        session.commit()
+        project_title = new_project.title
+    except IntegrityError as e: 
+        session.rollback()
+        print(f"[red]Error:[/red] Project already exist.")
+    finally:
+        session.close()
+        return project_title
+    
+def get_projects(user_id: int):
+    '''
+    Returns all projects associated with a user. 
+    '''
+    session = startConnection()
+
+    user = session.query(User).filter_by(id=user_id).first()
+    projects = user.projects
+    return projects
+    
         

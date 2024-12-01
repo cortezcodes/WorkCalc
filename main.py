@@ -27,7 +27,13 @@ def main():
     while True:
         display_menu(["login", "Create Account", "Exit"], title="Welcome to WorkCalc!")
         new_line()
-        selection = int(typer.prompt("Make a selection"))
+        try:
+            selection = int(typer.prompt("Make a selection"))
+        except ValueError as e:
+            new_line()
+            print("[red]ERROR:[/red] Invalid input.")
+            new_line()
+            selection = -1
         
         match selection:
             case 1:
@@ -44,8 +50,10 @@ def main():
                 time.sleep(1)
                 clear()
                 break
+            case -1:
+                pass
             case _:
-                print("invalid input, please try again.\n")
+                print("[red]Invalid:[/red] Bad input, please try again.")
 
 def main_menu():
     '''
@@ -55,7 +63,13 @@ def main_menu():
     while True:
         display_menu(["Daily", "Manage Projects", "Logout"], f"Welcome, {current_user.first_name}\nDate: {formatted_date}")
         new_line()
-        selection = int(typer.prompt("What would you like to do Today"))
+        try:
+            selection = int(typer.prompt("What would you like to do Today"))
+        except ValueError as e:
+            new_line()
+            print("[red]ERROR:[/red] Invalid input.")
+            new_line()
+            selection = -1
         match selection:
             case 1:
                 print("Daily is under construction")
@@ -69,6 +83,11 @@ def main_menu():
                 time.sleep(1)
                 clear()
                 break
+            case -1:
+                pass
+            case _:
+                print("[red]Invalid:[/red] Bad input, please try again.")
+
 
 if __name__ == "__main__":
     typer.run(main)

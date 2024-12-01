@@ -12,6 +12,8 @@ Copyright 2024 Cortez McCrary, Employee of JHU APL
 from os import system, name
 from typing import List
 from rich import print
+from rich.console import Console
+from rich.table import Table
 import typer
 
 clear = lambda: system('cls' if name=='nt' else 'clear')
@@ -47,3 +49,31 @@ def get_confirmation(fields: List[dict]):
     response = typer.confirm("Please confirm")
     clear()
     return response
+
+def optional_field_handler(value: str):
+    '''
+    Returns an empty string if value == "optional"
+    '''
+    if value == "optional":
+        return ""
+    else:
+        return value
+    
+def create_table(title: str, headers: List[str], rows: List[list]=[]):
+    '''
+    Helper function to create rich tables.  
+    '''
+    console = Console()
+
+    table = Table(title=title)
+
+    for header in headers:
+        table.add_column(header)
+
+
+    for row in rows:
+        table.add_row(*row)
+
+    console.print(table)
+
+    

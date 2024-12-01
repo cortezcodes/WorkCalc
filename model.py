@@ -9,7 +9,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement=)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     date_created = Column(DateTime, default=func.now())
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
@@ -45,7 +45,20 @@ class Project(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship("User", back_populates="projects")
+    budgets = relationship("Budget", back_populates='project', cascade='all, delete')
 
     def __repr__(self):
-        return f"<Project(title='{self.title}', description='{self.description}')>"
+        return f"<Project(title='{self.title}', description='{self.description}, budgets='{self.budgets}')>"
 
+class Budget(Base):
+    __tablename__="budgets"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    budget_code = Column(String, nullable=False, unique=True)
+    usage_description = Column(String)
+    project_id = Column(Integer, ForeignKey('projects.id'))
+
+    project = relationship("Project", back_populates="budgets")
+
+    def __repr__(self):
+        return f"<Budget(budget_code='{self.budget_code}', usage='{self.usage_description}')>"

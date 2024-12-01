@@ -17,10 +17,6 @@ def init_db():
         Base.metadata.create_all(bind=engine)
         print("[green]Database initialized[/green]")
         time.sleep(1)
-    else:
-        print("[green]Database already initialized,\nConnecting..../green]")
-
-        time.sleep(1)
 
     return  sessionmaker(bind=engine)
 
