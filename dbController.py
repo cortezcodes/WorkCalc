@@ -90,9 +90,25 @@ def get_projects(user_id: int):
     Returns all projects associated with a user. 
     '''
     session = startConnection()
-
-    user = session.query(User).filter_by(id=user_id).first()
-    projects = user.projects
-    return projects
+    try:
+        user = session.query(User).filter_by(id=user_id).first()
+        projects = user.projects
+        return projects
+    finally:
+        session.close()
     
+def delete_project(user_id: int, project_id:int):
+    session = startConnection()
+    try:
+        project = session.query(Project).filter(
+            Project.user_id == user_id,
+            Project.id == project_id).first()
+        if project:
+            session.delete(project)
+            session.commit()
+            return True
+        else:
+            return False
+    finally:
+        session.close()
         

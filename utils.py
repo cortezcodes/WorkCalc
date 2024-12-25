@@ -58,6 +58,19 @@ def optional_field_handler(value: str):
         return ""
     else:
         return value
+
+def menu_selector(question: str):
+    '''
+    wrapper around the typer.prompt that includes error handling.
+    returns an int from the user or -1 if invalid response. 
+    '''
+    try:
+       return int(typer.prompt(question))
+    except ValueError as e:
+        new_line()
+        print("[red]ERROR:[/red] Invalid input.")
+        new_line()
+        return -1
     
 def create_table(title: str, headers: List[str], rows: List[list]=[]):
     '''

@@ -45,7 +45,7 @@ class Project(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship("User", back_populates="projects")
-    budgets = relationship("Budget", back_populates='project', cascade='all, delete')
+    budgets = relationship("Budget", back_populates='project', cascade='all, delete', lazy="joined")
 
     def __repr__(self):
         return f"<Project(title='{self.title}', description='{self.description}, budgets='{self.budgets}')>"

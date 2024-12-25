@@ -11,7 +11,7 @@ Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
 import typer
 from rich import print
-from utils import display_menu, new_line, clear
+from utils import display_menu, new_line, clear, menu_selector
 from model import User
 from datetime import datetime
 from Prompters.userPrompter import login_prompt, create_user_prompt
@@ -27,14 +27,9 @@ def main():
     while True:
         display_menu(["login", "Create Account", "Exit"], title="Welcome to WorkCalc!")
         new_line()
-        try:
-            selection = int(typer.prompt("Make a selection"))
-        except ValueError as e:
-            new_line()
-            print("[red]ERROR:[/red] Invalid input.")
-            new_line()
-            selection = -1
-        
+
+        selection = menu_selector("Make a selection")
+
         match selection:
             case 1:
                 global current_user
@@ -63,13 +58,9 @@ def main_menu():
     while True:
         display_menu(["Daily", "Manage Projects", "Logout"], f"Welcome, {current_user.first_name}\nDate: {formatted_date}")
         new_line()
-        try:
-            selection = int(typer.prompt("What would you like to do Today"))
-        except ValueError as e:
-            new_line()
-            print("[red]ERROR:[/red] Invalid input.")
-            new_line()
-            selection = -1
+
+        selection = menu_selector("What would you like to do Today")
+
         match selection:
             case 1:
                 print("Daily is under construction")
