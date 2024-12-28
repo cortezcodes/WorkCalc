@@ -1,10 +1,12 @@
 from rich import print
 from sqlite3 import OperationalError
 from typing import List
+
+from sqlalchemy import DateTime
 from db import init_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound, MultipleResultsFound
-from model import Budget, Project, User
+from model import Budget, Event, Project, User
 
 def startConnection():
     '''
@@ -111,4 +113,18 @@ def delete_project(user_id: int, project_id:int):
             return False
     finally:
         session.close()
-        
+
+def add_event(user_id: int, project: str, budget: str, 
+              event_description: str, start_time: DateTime, end_time: DateTime | None, isComplete: bool):
+    '''
+    Creates an event entry in the event database
+    '''
+    session = startConnection()
+    current_user = session.query(User).filter_by(id=user_id).first()
+    try:
+        new_event = Event(owner=current_user,project=project, budget_code=budget, event_description=event_description,
+                          start_time=start_time, end_time=end_time, isComplete=isComplete)
+        session.add(new_event)
+        session.commit()
+    finally:
+        session.close()
