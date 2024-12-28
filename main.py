@@ -11,6 +11,7 @@ Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
 import typer
 from rich import print
+from Prompters.dailyPrompter import daily_menu
 from utils import display_menu, new_line, clear, menu_selector
 from model import User
 from datetime import datetime
@@ -63,7 +64,7 @@ def main_menu():
 
         match selection:
             case 1:
-                print("Daily is under construction")
+                daily_menu(user_id=User.id)
             case 2:
                 clear()
                 project_menu(user_id=User.id)

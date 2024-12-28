@@ -26,7 +26,7 @@ def project_menu(user_id: int):
     '''
     while True:
         print_project_table(user_id=user_id)
-        display_menu(["View Project", "Add Project", "Edit Project", "Delete Project", "Back"], "Project Menu")
+        display_menu(["View Project", "Add Project", "Delete Project", "Back to Main Menu"], "Project Menu")
         new_line()
 
         selection = menu_selector("Let's manage your Projects")
@@ -38,10 +38,10 @@ def project_menu(user_id: int):
                 clear()
                 add_project_prompt(user_id=user_id)
                 new_line()
-            case 4:
+            case 3:
                 clear()
                 delete_project_prompt(user_id=user_id)
-            case 5:
+            case 4:
                 clear()
                 break
             case -1:
@@ -73,6 +73,7 @@ def add_project_prompt(user_id: int):
     '''
     Get's user responses for creating a new project. 
     '''
+    # TODO ensure that when a project is created with at least one budget code
     while True:
         project_name = typer.prompt("Project Name")
         project_description = optional_field_handler(typer.prompt("Project Description", default="optional"))

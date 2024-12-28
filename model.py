@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, Date, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -17,6 +17,7 @@ class User(Base):
     password = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     projects = relationship("Project", back_populates='owner', cascade='all, delete')
+    events = relationship("Event", back_populates='owner', cascade='all, delete')
 
     def __repr__(self):
         return f"<User(name='{self.first_name} {self.last_name}', email='{self.email}', username='{self.username}')>"
@@ -62,3 +63,18 @@ class Budget(Base):
 
     def __repr__(self):
         return f"<Budget(budget_code='{self.budget_code}', usage='{self.usage_description}')>"
+    
+class Event(Base):
+    __tablename__="events"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project = Column(String, nullable=False)
+    budget_code = Column(String, nullable=False)
+    event_description = Column(String, nullable=True)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=True)
+    isComplete = Column(Boolean, nullable=False)
+
+    owner = relationship("User", back_populates="events")
+
+    def __repr__(self):
+        return f"<Event(project='{self.project}', budget_code='{self.budget_code}', event='{self.event_description}', start_time='{self.start_time}', end_time='{self.end_time}')>"
