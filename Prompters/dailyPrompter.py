@@ -1,13 +1,16 @@
 
 
+from datetime import datetime
 import time
 from typing import List
 import typer
 from Managers.budgetManager import get_wbs_list
+from Managers.dailyManager import add_event_handler
 from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
 
+date_selected: datetime = datetime.now()
 
 def daily_menu(user_id: int):
     '''
@@ -15,24 +18,27 @@ def daily_menu(user_id: int):
     '''
     clear()
     while True:
-        display_menu(["Start Event", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+        formatted_date = date_selected.strftime("%d/%m/%y %H:%M")
+        print(f"Current Date: {formatted_date}")
+        display_menu(["Change Date","Start Event", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
         new_line()
         selection = menu_selector("Let's manage your Projects")
         match selection:
             case 1:
-                print("start event")
+                print("Change Date")
             case 2:
-                print("finish event")
+                print("start event")
             case 3:
-                create_event_prompter(user_id=user_id)
-
+                print("finish event")
             case 4:
-                print("Delete Event")
+                create_event_prompter(user_id=user_id, cur_date=date_selected)
             case 5:
+                print("Delete Event")
+            case 6:
                 clear()
                 break
 
-def create_event_prompter(user_id: int):
+def create_event_prompter(user_id: int, cur_date: datetime):
     '''
     Menu for creating a new event
     '''
@@ -41,8 +47,8 @@ def create_event_prompter(user_id: int):
         project, budget = budget_selector(user_id=user_id)
         if project and budget:
             event = typer.prompt("Event Description")
-            start_time = typer.prompt("Start Time (00:00  - 23:59)")
-            end_time = optional_field_handler(typer.prompt("End Time (00:00  - 23:59)", default="optional"))
+            start_time = typer.prompt("Start Time (0000  - 2359)")
+            end_time = optional_field_handler(typer.prompt("End Time (0000  - 2359)", default="optional"))
             is_complete: bool = None
             if end_time:
                 is_complete = True
@@ -57,6 +63,15 @@ def create_event_prompter(user_id: int):
                                 create_confirmation("End", end_time),
                                 create_confirmation("Complete?", is_complete)])
             if isConfirmed:
+                try:
+                    add_event_handler(user_id=user_id, date=cur_date, project=project.title, 
+                                    budget=budget.budget_code, event_description=event, start_time=start_time,
+                                    end_time=end_time, isComplete=is_complete)
+                except ValueError as e:
+                    print(f"ValueError: {e}")
+                    new_line()
+                    return
+                
                 print("Event created")
                 time.sleep(1)
                 clear()

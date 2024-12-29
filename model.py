@@ -73,6 +73,7 @@ class Event(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=True)
     isComplete = Column(Boolean, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship("User", back_populates="events")
 
