@@ -9,10 +9,11 @@ Modified By: Cortez L. McCrary (cortez.mccrary.codes@gmail.com>)
 -----
 Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
-
-
 from datetime import datetime
-from dbController import add_event
+from typing import List
+from dbController import add_event, get_events_on_date
+from model import Event
+from utils import create_table, get_total_hours
 
 
 def add_event_handler(user_id: int, date: datetime, project: str, budget: str, 
@@ -40,3 +41,40 @@ def add_event_handler(user_id: int, date: datetime, project: str, budget: str,
     add_event(user_id=user_id, project=project, budget=budget, 
               event_description=event_description, start_time=start_datetime,
               end_time=end_datetime, isComplete=isComplete)
+    
+def print_event_table(user_id:int, date: datetime):
+    '''
+    Prints current dates event table
+    '''
+    headers=["Start", "End", "Total Time", "Project", "Event Description", "Budget"]
+    events: List[Event] = get_events_on_date(user_id, date)
+    rows: List[list] = []
+    for event in events:
+        total_hours = get_total_hours(event.start_time, event.end_time)
+        rows.append([event.start_time.strftime("%H:%M"), event.end_time.strftime("%H:%M"),
+                     str(total_hours), event.project, event.event_description, event.budget_code])
+    formatted_date = date.strftime("%m/%d/%Y")
+    create_table(title=f"Events on {formatted_date}", headers=headers, rows=rows)
+
+def print_daily_budget_totals_table(user_id: int, date: datetime):
+    '''
+    Prints table for displaying totals for a given day based on budgets
+    '''
+    headers=["Budget", "hours"]
+    events: List[Event] = get_events_on_date(user_id, date)
+    rows:List[list] = []
+    budget_totals: dict = {}
+    daily_total_hours = 0
+    for event in events:
+        total_hours = get_total_hours(event.start_time, event.end_time)
+        daily_total_hours = daily_total_hours + total_hours
+        if event.budget_code not in budget_totals.keys():
+            budget_totals[event.budget_code] = total_hours
+        else:
+            budget_totals[event.budget_code] = budget_totals[event.budget_code] + total_hours
+
+    for budget, value in budget_totals.items():
+        rows.append([budget, str(value)])
+    
+    rows.append(["Total", str(daily_total_hours)])
+    create_table(title="Daily Budget Totals", headers=headers, rows=rows)

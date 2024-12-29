@@ -9,6 +9,8 @@ Modified By: Cortez L. McCrary (cortez.mccrary.codes@gmail.com>)
 -----
 Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
+from datetime import datetime
+import math
 from os import system, name
 from typing import List
 from rich import print
@@ -89,4 +91,13 @@ def create_table(title: str, headers: List[str], rows: List[list]=[]):
 
     console.print(table)
 
+def get_total_hours(start_time: datetime, end_time: datetime):
+    '''
+    Calculates and returns the number of hours between two datetimes to the first decimal. 
+    '''
+    time_diff = end_time - start_time
+    hours = time_diff.total_seconds() / 3600
+    hours_rounded = math.ceil(hours*10) / 10
+
+    return hours_rounded
     

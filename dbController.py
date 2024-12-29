@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from rich import print
 from sqlite3 import OperationalError
 from typing import List
@@ -126,5 +127,22 @@ def add_event(user_id: int, project: str, budget: str,
                           start_time=start_time, end_time=end_time, isComplete=isComplete)
         session.add(new_event)
         session.commit()
+    finally:
+        session.close()
+
+def get_events_on_date(user_id: int, target_date: datetime):
+    '''
+    Retrieves all events on a given day
+    '''
+    start_of_day = target_date.replace(hour=0, minute=0, microsecond=0)
+    end_of_day = start_of_day + timedelta(days=1)
+    session = startConnection()
+    try:
+        events = session.query(Event).filter(
+            Event.user_id == user_id,
+            Event.start_time >= start_of_day,
+            Event.start_time < end_of_day).all()
+        
+        return events
     finally:
         session.close()

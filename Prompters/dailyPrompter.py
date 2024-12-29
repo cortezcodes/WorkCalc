@@ -5,7 +5,7 @@ import time
 from typing import List
 import typer
 from Managers.budgetManager import get_wbs_list
-from Managers.dailyManager import add_event_handler
+from Managers.dailyManager import add_event_handler, print_daily_budget_totals_table, print_event_table
 from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
@@ -18,8 +18,10 @@ def daily_menu(user_id: int):
     '''
     clear()
     while True:
-        formatted_date = date_selected.strftime("%d/%m/%y %H:%M")
-        print(f"Current Date: {formatted_date}")
+        print_event_table(user_id=user_id, date=date_selected)
+        new_line()
+        print_daily_budget_totals_table(user_id=user_id, date=date_selected)
+        new_line()
         display_menu(["Change Date","Start Event", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
         new_line()
         selection = menu_selector("Let's manage your Projects")
@@ -44,6 +46,7 @@ def create_event_prompter(user_id: int, cur_date: datetime):
     '''
     clear()
     while True:
+
         project, budget = budget_selector(user_id=user_id)
         if project and budget:
             event = typer.prompt("Event Description")
