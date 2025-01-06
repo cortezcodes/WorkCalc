@@ -5,9 +5,9 @@ import time
 from typing import List
 import typer
 from Managers.budgetManager import get_wbs_list
-from Managers.dailyManager import add_event_handler, print_daily_budget_totals_table, print_event_table
+from Managers.dailyManager import add_event_handler, delete_event_by_id, print_daily_budget_totals_table, print_event_table
 from Managers.projectManager import get_project_title_list, get_projects_list
-from model import Budget, Project
+from model import Budget, Event, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
 
 #TODO Start Event Function
@@ -25,7 +25,7 @@ def daily_menu(user_id: int):
         new_line()
         print_daily_budget_totals_table(user_id=user_id, date=date_selected)
         new_line()
-        display_menu(["Change Date","Start Event", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+        display_menu(["Change Date","Start Event (Coming Soon)", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
         new_line()
         selection = menu_selector("Let's manage your Projects")
         match selection:
@@ -38,7 +38,7 @@ def daily_menu(user_id: int):
             case 4:
                 create_event_prompter(user_id=user_id, cur_date=date_selected)
             case 5:
-                print("Delete Event")
+                delete_event_prompter(user_id=user_id, cur_date=date_selected)
             case 6:
                 clear()
                 break
@@ -99,6 +99,27 @@ def create_event_prompter(user_id: int, cur_date: datetime):
             break
     clear()
 
+def delete_event_prompter(user_id: int, cur_date: datetime):
+    '''
+    Prompts a user for deleting an event for a given day. 
+    '''
+    clear()
+    events: List[Event] = print_event_table(user_id=user_id, date=cur_date, isNumbered=True)
+    while True:
+        input = typer.prompt("Select an event by it's # (Cancel with input e)")
+        if input == 'e':
+            return
+        
+        input = int(input)-1
+        if input >= 0 and input < len(events):
+            event: Event = events[input]
+            clear()
+            delete_event_by_id(user_id=user_id, event_id=event.id)
+            new_line()
+            return
+        else:
+            print("Invalid input")
+
 def budget_selector(user_id: int):
     '''
     Menu for selecting a budget to log with an event. Retuns a str of the project and the budget 
@@ -130,8 +151,3 @@ def budget_selector(user_id: int):
             budget_selected = project_selected.budgets[selection-1]
 
     return project_selected, budget_selected
-
-def delete_event_prompter(user_id: int):
-    '''
-    Menu for deleting an event
-    '''

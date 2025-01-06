@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from rich import print
-from sqlite3 import OperationalError
+from sqlite3 import Error, OperationalError
 from typing import List
 
 from sqlalchemy import DateTime
@@ -144,5 +144,23 @@ def get_events_on_date(user_id: int, target_date: datetime):
             Event.start_time < end_of_day).all()
         
         return events
+    finally:
+        session.close()
+
+def delete_event(user_id:int, event_id: int):
+    '''
+    Given an event id, delete the event if the user has access
+    '''
+    session = startConnection()
+    try:
+        event = session.query(Event).filter(
+            Event.user_id == user_id,
+            Event.id == event_id).first()
+        if event:
+            session.delete(event)
+            session.commit()
+            print("Event deleted successfully")
+    except Error as e:
+        print(f"Error in delete_event(): {e}")
     finally:
         session.close()

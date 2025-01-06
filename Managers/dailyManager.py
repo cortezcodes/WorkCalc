@@ -11,7 +11,7 @@ Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
 from datetime import datetime
 from typing import List
-from dbController import add_event, get_events_on_date
+from dbController import add_event, delete_event, get_events_on_date
 from model import Event
 from utils import create_table, get_total_hours
 
@@ -42,19 +42,29 @@ def add_event_handler(user_id: int, date: datetime, project: str, budget: str,
               event_description=event_description, start_time=start_datetime,
               end_time=end_datetime, isComplete=isComplete)
     
-def print_event_table(user_id:int, date: datetime):
+def print_event_table(user_id:int, date: datetime, isNumbered:bool=False):
     '''
-    Prints current dates event table
+    Prints current dates event table.
+    Optionally, the table can be numbered as a list
+    returns all events on the given date
     '''
-    headers=["Start", "End", "Total Time", "Project", "Event Description", "Budget"]
+    if isNumbered:
+        headers=["#","Start", "End", "Total Time", "Project", "Event Description", "Budget"]
+    else:
+        headers=["Start", "End", "Total Time", "Project", "Event Description", "Budget"]
     events: List[Event] = get_events_on_date(user_id, date)
     rows: List[list] = []
-    for event in events:
+    for index, event in enumerate(events, start=1):
         total_hours = get_total_hours(event.start_time, event.end_time)
-        rows.append([event.start_time.strftime("%H:%M"), event.end_time.strftime("%H:%M"),
+        if isNumbered:
+             rows.append([str(index), event.start_time.strftime("%H:%M"), event.end_time.strftime("%H:%M"),
                      str(total_hours), event.project, event.event_description, event.budget_code])
+        else:
+            rows.append([event.start_time.strftime("%H:%M"), event.end_time.strftime("%H:%M"),
+                        str(total_hours), event.project, event.event_description, event.budget_code])
     formatted_date = date.strftime("%m/%d/%Y")
     create_table(title=f"Events on {formatted_date}", headers=headers, rows=rows)
+    return events
 
 def print_daily_budget_totals_table(user_id: int, date: datetime):
     '''
@@ -78,3 +88,10 @@ def print_daily_budget_totals_table(user_id: int, date: datetime):
     
     rows.append(["Total", str(round(daily_total_hours, 2))])
     create_table(title="Daily Budget Totals", headers=headers, rows=rows)
+
+def delete_event_by_id(user_id: int, event_id: int):
+    '''
+    Given a event id that is associated with the user_id, delete the event. 
+    returns true if successful
+    '''
+    delete_event(user_id=user_id,event_id=event_id)
