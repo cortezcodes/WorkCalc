@@ -10,13 +10,16 @@ from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
 
-date_selected: datetime = datetime.now()
+#TODO Start Event Function
+#TODO Add Event Function
+#TODO Delete Event Function
 
 def daily_menu(user_id: int):
     '''
    Creates the main menu for daily task 
     '''
-    clear()
+    clear()  
+    date_selected: datetime = datetime.now()
     while True:
         print_event_table(user_id=user_id, date=date_selected)
         new_line()
@@ -27,7 +30,7 @@ def daily_menu(user_id: int):
         selection = menu_selector("Let's manage your Projects")
         match selection:
             case 1:
-                print("Change Date")
+                date_selected = change_date_prompter()
             case 2:
                 print("start event")
             case 3:
@@ -39,6 +42,19 @@ def daily_menu(user_id: int):
             case 6:
                 clear()
                 break
+
+def change_date_prompter():
+    '''
+    prompts the user to change current date being viewed
+    '''
+    clear()
+    new_date = typer.prompt("Date (MM/DD/YYYY)")
+    try:
+        clear()
+        return datetime.strptime(new_date,"%m/%d/%Y")
+    except ValueError as e:
+        print(f"ValueError: ensure you are using the correct MM/DD/YYYY Format. {e}")
+
 
 def create_event_prompter(user_id: int, cur_date: datetime):
     '''

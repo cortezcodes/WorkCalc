@@ -76,5 +76,5 @@ def print_daily_budget_totals_table(user_id: int, date: datetime):
     for budget, value in budget_totals.items():
         rows.append([budget, str(value)])
     
-    rows.append(["Total", str(daily_total_hours)])
+    rows.append(["Total", str(round(daily_total_hours, 2))])
     create_table(title="Daily Budget Totals", headers=headers, rows=rows)
