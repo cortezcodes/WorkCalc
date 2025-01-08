@@ -116,7 +116,7 @@ def delete_project(user_id: int, project_id:int):
         session.close()
 
 def add_event(user_id: int, project: str, budget: str, 
-              event_description: str, start_time: DateTime, end_time: DateTime | None, isComplete: bool):
+              event_description: str, start_time: DateTime, isComplete: bool, end_time: DateTime | None = None):
     '''
     Creates an event entry in the event database
     '''
@@ -127,8 +127,27 @@ def add_event(user_id: int, project: str, budget: str,
                           start_time=start_time, end_time=end_time, isComplete=isComplete)
         session.add(new_event)
         session.commit()
+        return new_event
     finally:
         session.close()
+
+def get_active_event(user_id:int, target_date: datetime):
+    '''
+    Retreives the active event for a given day. 
+    '''
+    start_of_day = target_date.replace(hour=0, minute=0, microsecond=0)
+    end_of_day = start_of_day + timedelta(days=1)
+    session = startConnection()
+    try:
+        event = session.query(Event).filter(
+            Event.user_id == user_id,
+            Event.start_time >= start_of_day,
+            Event.start_time < end_of_day,
+            Event.isComplete == False).first()
+        return event
+    finally:
+        session.close()
+    
 
 def get_events_on_date(user_id: int, target_date: datetime):
     '''

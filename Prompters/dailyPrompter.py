@@ -1,18 +1,19 @@
 
 
-from datetime import datetime
+from datetime import datetime, date
 import time
+from rich import print
 from typing import List
 import typer
 from Managers.budgetManager import get_wbs_list
-from Managers.dailyManager import add_event_handler, delete_event_by_id, print_daily_budget_totals_table, print_event_table
+from Managers.dailyManager import add_event_handler, delete_event_by_id, get_active_event_handler, print_daily_budget_totals_table, print_event_table, start_event_handler
 from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Event, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
 
-#TODO Start Event Function
-#TODO Add Event Function
-#TODO Delete Event Function
+#TODO Finish Event Function
+#TODO Change to Today Function
+
 
 def daily_menu(user_id: int):
     '''
@@ -20,28 +21,63 @@ def daily_menu(user_id: int):
     '''
     clear()  
     date_selected: datetime = datetime.now()
+    active_event: Event | None = None
     while True:
+        active_event = get_active_event_handler(user_id=user_id, target_date=date_selected)
         print_event_table(user_id=user_id, date=date_selected)
-        new_line()
         print_daily_budget_totals_table(user_id=user_id, date=date_selected)
         new_line()
-        display_menu(["Change Date","Start Event (Coming Soon)", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
-        new_line()
-        selection = menu_selector("Let's manage your Projects")
-        match selection:
-            case 1:
-                date_selected = change_date_prompter()
-            case 2:
-                print("start event")
-            case 3:
-                print("finish event")
-            case 4:
-                create_event_prompter(user_id=user_id, cur_date=date_selected)
-            case 5:
-                delete_event_prompter(user_id=user_id, cur_date=date_selected)
-            case 6:
-                clear()
-                break
+        if active_event:
+            print(f"Current Active Event:\n\tProject: {active_event.project}\n\tStart Time: {active_event.start_time}" +
+                  f"\n\tEvent Description: {active_event.event_description}\n\tBudget: {active_event.budget_code}")
+            new_line()
+            display_menu(["Change Date", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            new_line()
+            selection = menu_selector("Let's Manage your Projects")
+            match selection:
+                case 1:
+                    date_selected = change_date_prompter()
+                case 2:
+                    print("Finish Event (Coming Soon)")
+                case 3:
+                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 4:
+                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 5:
+                    clear()
+                    break
+        elif not active_event and date_selected.date() == date.today():
+            display_menu(["Change Date","Start Event (Coming Soon)", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            new_line()
+            selection = menu_selector("Let's manage your Projects")
+            match selection:
+                case 1:
+                    date_selected = change_date_prompter()
+                case 2:
+                    start_event_prompter(user_id=user_id)
+                case 3:
+                    print("finish event")
+                case 4:
+                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 5:
+                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 6:
+                    clear()
+                    break
+        else:
+            display_menu(["Change Date", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            new_line()
+            selection = menu_selector("Let's manage your Projects")
+            match selection:
+                case 1:
+                    date_selected = change_date_prompter()
+                case 2:
+                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 3:
+                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 4:
+                    clear()
+                    break
 
 def change_date_prompter():
     '''
@@ -55,24 +91,40 @@ def change_date_prompter():
     except ValueError as e:
         print(f"ValueError: ensure you are using the correct MM/DD/YYYY Format. {e}")
 
+def start_event_prompter(user_id:int):
+    '''
+    Start an event time now, with no end time. Program can only have one active event at any given time. 
+    '''
+    while True:
+        clear()
+        project, budget = budget_selector(user_id=user_id)
+        if project and budget:
+            event_description = typer.prompt("Event Description")
+            new_line()
+            isConfirmed = get_confirmation([create_confirmation("Project", project.title),
+                    create_confirmation("Budget", budget.budget_code),
+                    create_confirmation("Event", event_description)])
+            if isConfirmed:
+                start_event_handler(user_id=user_id, project=project.title, budget=budget.budget_code, event_description=event_description)
+                break
+        else:
+            break
 
 def create_event_prompter(user_id: int, cur_date: datetime):
     '''
     Menu for creating a new event
     '''
-    clear()
     while True:
-
+        clear()
         project, budget = budget_selector(user_id=user_id)
         if project and budget:
             event = typer.prompt("Event Description")
+            new_line()
+            print_event_table(user_id=user_id, date=cur_date)
+            new_line()
             start_time = typer.prompt("Start Time (0000  - 2359)")
-            end_time = optional_field_handler(typer.prompt("End Time (0000  - 2359)", default="optional"))
-            is_complete: bool = None
-            if end_time:
-                is_complete = True
-            else:
-                is_complete = False
+            end_time = typer.prompt("End Time (0000  - 2359)")
+            is_complete: bool = True
             clear()
 
             isConfirmed = get_confirmation([create_confirmation("Project", project.title),
@@ -96,6 +148,10 @@ def create_event_prompter(user_id: int, cur_date: datetime):
                 clear()
                 break
         else:
+            clear()
+            print("Add event cancelled")
+            time.sleep(1)
+            clear()
             break
     clear()
 
