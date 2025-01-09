@@ -4,3 +4,6 @@ workcalc_database.db
 alembic/
 alembic.ini
 workcalc.db
+dist/
+build/
+WorkCalc.spec
