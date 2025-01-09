@@ -11,7 +11,7 @@ Copyright 2024 Cortez McCrary, Employee of JHU APL
 '''
 from datetime import datetime
 from typing import List
-from dbController import add_event, delete_event, get_active_event, get_events_on_date
+from dbController import add_event, delete_event, get_active_event, get_events_on_date, finish_active_event
 from model import Event
 from utils import create_table, get_total_hours
 
@@ -60,6 +60,11 @@ def get_active_event_handler(user_id:int, target_date: datetime):
     '''
     return get_active_event(user_id=user_id, target_date=target_date)
 
+def finish_active_event_handler(user_id:int, event_id: int):
+    '''
+    finish the active event
+    '''
+    finish_active_event(user_id=user_id, event_id=event_id)
     
 def print_event_table(user_id:int, date: datetime, isNumbered:bool=False):
     '''

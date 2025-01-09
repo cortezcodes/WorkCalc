@@ -6,7 +6,7 @@ from rich import print
 from typing import List
 import typer
 from Managers.budgetManager import get_wbs_list
-from Managers.dailyManager import add_event_handler, delete_event_by_id, get_active_event_handler, print_daily_budget_totals_table, print_event_table, start_event_handler
+from Managers.dailyManager import add_event_handler, delete_event_by_id, finish_active_event_handler, get_active_event_handler, print_daily_budget_totals_table, print_event_table, start_event_handler
 from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Event, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
@@ -31,14 +31,15 @@ def daily_menu(user_id: int):
             print(f"Current Active Event:\n\tProject: {active_event.project}\n\tStart Time: {active_event.start_time}" +
                   f"\n\tEvent Description: {active_event.event_description}\n\tBudget: {active_event.budget_code}")
             new_line()
-            display_menu(["Change Date", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's Manage your Projects")
             match selection:
                 case 1:
                     date_selected = change_date_prompter()
                 case 2:
-                    print("Finish Event (Coming Soon)")
+                    finish_active_event_handler(user_id=user_id, event_id=active_event.id)
+                    active_event = None
                 case 3:
                     create_event_prompter(user_id=user_id, cur_date=date_selected)
                 case 4:
@@ -47,7 +48,7 @@ def daily_menu(user_id: int):
                     clear()
                     break
         elif not active_event and date_selected.date() == date.today():
-            display_menu(["Change Date","Start Event (Coming Soon)", "Finish Event (Coming Soon)", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date", "Start Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's manage your Projects")
             match selection:
@@ -56,12 +57,10 @@ def daily_menu(user_id: int):
                 case 2:
                     start_event_prompter(user_id=user_id)
                 case 3:
-                    print("finish event")
-                case 4:
                     create_event_prompter(user_id=user_id, cur_date=date_selected)
-                case 5:
+                case 4:
                     delete_event_prompter(user_id=user_id, cur_date=date_selected)
-                case 6:
+                case 5:
                     clear()
                     break
         else:

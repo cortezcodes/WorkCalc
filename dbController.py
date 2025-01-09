@@ -147,6 +147,23 @@ def get_active_event(user_id:int, target_date: datetime):
         return event
     finally:
         session.close()
+
+def finish_active_event(user_id: int, event_id: int):
+    '''
+    Close out an active event 
+    '''
+    session = startConnection()
+    try:
+        event: Event = session.query(Event).filter(
+            Event.user_id == user_id,
+            Event.id == event_id,
+            Event.isComplete == False
+        ).first()
+        event.end_time = datetime.now().replace(second=0, microsecond=0)
+        event.isComplete = True
+        session.commit()
+    finally:
+        session.close()
     
 
 def get_events_on_date(user_id: int, target_date: datetime):
