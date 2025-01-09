@@ -13,7 +13,8 @@ from utils import create_confirmation, display_menu, get_confirmation, new_line,
 
 #TODO Finish Event Function
 #TODO Change to Today Function
-
+#TODO Create Yearly Report 
+#TODO Create Customize date range report
 
 def daily_menu(user_id: int):
     '''
