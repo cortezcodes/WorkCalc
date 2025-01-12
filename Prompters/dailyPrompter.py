@@ -11,7 +11,7 @@ from Managers.projectManager import get_project_title_list, get_projects_list
 from model import Budget, Event, Project
 from utils import create_confirmation, display_menu, get_confirmation, new_line, menu_selector, clear, optional_field_handler
 
-#TODO Finish Event Function
+# TODO Create Non-billable events
 #TODO Change to Today Function
 #TODO Create Yearly Report 
 #TODO Create Customize date range report
@@ -49,7 +49,7 @@ def daily_menu(user_id: int):
                     clear()
                     break
         elif not active_event and date_selected.date() == date.today():
-            display_menu(["Change Date", "Start Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date", "Start Event", "Add Event", "Delete Event", "Add Non-billable Event","Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's manage your Projects")
             match selection:
@@ -62,6 +62,8 @@ def daily_menu(user_id: int):
                 case 4:
                     delete_event_prompter(user_id=user_id, cur_date=date_selected)
                 case 5:
+                    create_non_billable_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 6:
                     clear()
                     break
         else:
@@ -175,6 +177,90 @@ def delete_event_prompter(user_id: int, cur_date: datetime):
             return
         else:
             print("Invalid input")
+
+def create_non_billable_event_prompter(user_id: int, cur_date: datetime):
+    '''
+    Used to create an event that does not get included into your billable hours
+    '''
+    while True:
+        clear()
+        event_titles: List[str] = ["Lunch", "Sick time", "Personal Time", "Administrative", "Holiday", "Other", "Back to Event Menu"]
+        event_budget_dict: dict[str] = {
+            "Lunch":"Lunch", 
+            "Sick Time":"Sick",
+            "Personal Time": "Personal",
+            "Administrative":"Admin",
+            "Holiday": "Holiday",
+            "Other": "Other"}
+        event_selected: str = None
+        budget_selected: str = None
+        while not budget_selected or not event_selected:
+            display_menu(event_titles, "Events")
+            new_line()
+            selection = int(menu_selector("Select an Event"))
+            if selection == len(event_titles):
+                return
+            elif selection <= len(event_titles) and selection > 0:
+                event_selected = event_titles[selection-1]
+                budget_selected = event_budget_dict.get(event_selected)
+        
+        if event_selected and budget_selected:
+            print_event_table(user_id=user_id, date=cur_date)
+            new_line()
+            start_time = typer.prompt("Start Time (0000  - 2359)")
+            end_time = typer.prompt("End Time (0000  - 2359)")
+            is_complete: bool = True
+            clear()
+
+            isConfirmed = get_confirmation([create_confirmation("Event", event_selected),
+                                create_confirmation("Start", start_time),
+                                create_confirmation("End", end_time),
+                                create_confirmation("Complete?", is_complete)])
+            if isConfirmed:
+                try:
+                    add_event_handler(user_id=user_id, date=cur_date, project="", 
+                                    budget=budget_selected, event_description=event_selected, start_time=start_time,
+                                    end_time=end_time, isComplete=is_complete)
+                except ValueError as e:
+                    print(f"ValueError: {e}")
+                    new_line()
+                    return
+                
+                print("Event created")
+                time.sleep(1)
+                clear()
+                break
+        else:
+            clear()
+            print("Add event cancelled")
+            time.sleep(1)
+            clear()
+            break
+    clear()
+
+def delete_event_prompter(user_id: int, cur_date: datetime):
+    '''
+    Prompts a user for deleting an event for a given day. 
+    '''
+    clear()
+    events: List[Event] = print_event_table(user_id=user_id, date=cur_date, isNumbered=True)
+    while True:
+        input = typer.prompt("Select an event by it's # (Cancel with input e)")
+        if input == 'e':
+            return
+        
+        input = int(input)-1
+        if input >= 0 and input < len(events):
+            event: Event = events[input]
+            clear()
+            delete_event_by_id(user_id=user_id, event_id=event.id)
+            new_line()
+            return
+        else:
+            print("Invalid input")
+
+
+
 
 def budget_selector(user_id: int):
     '''
