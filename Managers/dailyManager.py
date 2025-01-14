@@ -77,6 +77,7 @@ def print_event_table(user_id:int, date: datetime, isNumbered:bool=False):
     else:
         headers=["Start", "End", "Total Time", "Project", "Event Description", "Budget"]
     events: List[Event] = get_events_on_date(user_id, date)
+    events.sort(key= lambda event: event.start_time)
     rows: List[list] = []
     for index, event in enumerate(events, start=1):
         if event.isComplete: # For complete projects
