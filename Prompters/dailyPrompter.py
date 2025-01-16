@@ -1,6 +1,6 @@
 
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import time
 from rich import print
 from typing import List
@@ -32,52 +32,76 @@ def daily_menu(user_id: int):
             print(f"Current Active Event:\n\tProject: {active_event.project}\n\tStart Time: {active_event.start_time}" +
                   f"\n\tEvent Description: {active_event.event_description}\n\tBudget: {active_event.budget_code}")
             new_line()
-            display_menu(["Change Date", "Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date", "Forwad Day","Back Day","Today","Finish Event", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's Manage your Projects")
             match selection:
                 case 1:
                     date_selected = change_date_prompter()
                 case 2:
+                    date_selected = date_selected + timedelta(days=1)
+                    clear()
+                case 3:
+                    date_selected = date_selected - timedelta(days=1)
+                    clear()
+                case 4:
+                    date_selected = datetime.now()
+                    clear()
+                case 5:
                     finish_active_event_handler(user_id=user_id, event_id=active_event.id)
                     active_event = None
-                case 3:
+                case 6:
                     create_event_prompter(user_id=user_id, cur_date=date_selected)
-                case 4:
+                case 7:
                     delete_event_prompter(user_id=user_id, cur_date=date_selected)
-                case 5:
+                case 8:
                     clear()
                     break
         elif not active_event and date_selected.date() == date.today():
-            display_menu(["Change Date", "Start Event", "Add Event", "Delete Event", "Add Non-billable Event","Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date","Forward Day", "Back Day", "Start Event", "Add Event", "Delete Event", "Add Non-billable Event","Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's manage your Projects")
             match selection:
                 case 1:
                     date_selected = change_date_prompter()
                 case 2:
-                    start_event_prompter(user_id=user_id)
+                    date_selected = date_selected + timedelta(days=1)
+                    clear()
                 case 3:
-                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                    date_selected = date_selected - timedelta(days=1)
+                    clear()
                 case 4:
-                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                    start_event_prompter(user_id=user_id)
                 case 5:
-                    create_non_billable_event_prompter(user_id=user_id, cur_date=date_selected)
+                    create_event_prompter(user_id=user_id, cur_date=date_selected)
                 case 6:
+                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 7:
+                    create_non_billable_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 8:
                     clear()
                     break
         else:
-            display_menu(["Change Date", "Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
+            display_menu(["Change Date","Forward Day","Back Day","Today","Add Event", "Delete Event", "Back to Main Menu"], "Daily Menu")
             new_line()
             selection = menu_selector("Let's manage your Projects")
             match selection:
                 case 1:
                     date_selected = change_date_prompter()
                 case 2:
-                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                    date_selected = date_selected + timedelta(days=1)
+                    clear()
                 case 3:
-                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                    date_selected = date_selected - timedelta(days=1)
+                    clear()
                 case 4:
+                    date_selected = datetime.now()
+                    clear()
+                case 5:
+                    create_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 6:
+                    delete_event_prompter(user_id=user_id, cur_date=date_selected)
+                case 7:
                     clear()
                     break
 
