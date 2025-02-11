@@ -15,7 +15,7 @@ from email_validator import EmailNotValidError
 import typer
 from os import system, name
 from rich import print
-from maskpass import advpass
+from maskpass import advpass, askpass
 from Managers.userManager import ConfirmPasswordError, WrongCredentialsError, register_user_handler, EmptyFieldError, login_handler
 from sqlalchemy.exc import IntegrityError, DBAPIError, NoResultFound, MultipleResultsFound
 from sqlalchemy.orm import Session
@@ -28,7 +28,7 @@ def login_prompt():
     '''
     clear()
     username = typer.prompt("Username")
-    password = advpass()
+    password = askpass() #advpass does not work on ubunut. Substituted askpass
     try:
         current_user = login_handler(username=username, password=password)
         clear()
